@@ -1,6 +1,8 @@
 # Conversa com Claude Code — implementação do desafio Ferrapex
 
-Exportado do Claude Code (desktop). O ficheiro `.jsonl` ao lado tem o transcript completo, incluindo todas as chamadas a ferramentas e os respetivos resultados.
+Exportado do Claude Code (desktop). O `.jsonl` ao lado tem o transcript completo, com todas as
+chamadas a ferramentas e os respetivos resultados. Aqui ficam as mensagens e, em citação, a
+descrição de cada ação executada. As decisões estão resumidas em [`../decisoes.md`](../decisoes.md).
 
 ---
 
@@ -995,5 +997,142 @@ Funciona numa cópia limpa: cria o ambiente, a BD, importa, e o segundo sync é 
 Reescrevo o README à volta do comando único:
 
 > 🔧 Write
+
+> 🔧 ToolSearch
+
+> 🔧 mcp__ccd_session_mgmt__export_transcript
+
+### 🤖 Claude
+
+Antes de pôr a conversa no repositório, confirmo que a chave da API não aparece lá (verifico sem a imprimir):
+
+> 🔧 Unzip transcript export and check it doesn't contain the API key
+
+### 🤖 Claude
+
+A chave não aparece. Copio o transcript para `docs/ai-conversations/` e gero uma versão legível em Markdown:
+
+> 🔧 Inspect transcript format and check for personal email
+
+> 🔧 Save transcript and generate readable Markdown version
+
+> 🔧 Run tests and list files to be committed
+
+### 🤖 Claude
+
+Faço commits por componente, cada um com o código e os respetivos testes:
+
+> 🔧 Create logical commits per component
+
+> 🔧 Verify no secrets in git history; clean temp export
+
+### 🤖 Claude
+
+Os três pontos que faltavam estão feitos: o comando único, a conversa com a AI guardada no projeto e o histórico git. Os 71 testes passam.
+
+**1. Comando único: `uv run ferrapex`**
+- Instala as dependências, cria a BD, importa os emails da API e abre a página web em http://127.0.0.1:8000.
+- Subcomandos: `sync`, `orders` (lista as encomendas no terminal) e `serve`; opções `--no-browser` e `--port`.
+- **Mensagens de erro:**
+  - Sem `.env`: diz exatamente o que copiar e preencher.
+  - Chave inválida ou expirada (401/403): diz isso explicitamente.
+  - API em baixo: avisa e abre a página na mesma, com os dados que já tens.
+- **Teste numa cópia limpa:** copiei o projeto sem `.venv`, sem BD e sem `.env` e corri só os passos do README contra a API real.
+  - Sem `.env`, deu a mensagem de configuração em falta.
+  - Com `.env`, importou os 3 emails como `processed`.
+  - Um segundo sync importou 0 (idempotente), e `ferrapex orders` listou as 3 encomendas.
+  - Nessa máquina o `uv` usou o Python 3.12 do Homebrew. Num computador sem Python 3.12, o `uv` descarrega-o sozinho, mas esse caso não testei.
+- **README:** reescrito à volta deste comando. O Ollama aparece como opcional, porque os emails atuais não precisam dele.
+
+**2. Conversas com a AI**
+- Exportei esta sessão para [docs/ai-conversations/](docs/ai-conversations/): o `.jsonl` completo e uma versão `.md` legível.
+- Confirmei que a tua chave não aparece em lado nenhum.
+- O transcript inclui o teu email pessoal (vem do contexto da sessão). Se não o quiseres no repositório, diz-me.
+- Esta parte final da conversa não entrou na exportação. Antes de entregar, exporta outra vez no menu da sessão e substitui o ficheiro.
+- Se usaste a AI noutras conversas (por exemplo, para montar o prompt inicial), junta-as na mesma pasta.
+
+**3. Git**
+- Fiz 9 commits por componente (setup, domínio, parser/validator, Ollama, persistência, service, API/web, CLI, conversas), cada um com os seus testes.
+- Nem o `.env` nem a BD estão no git, e a chave não aparece em nenhum commit.
+- Não há remote nem fiz push. Diz-me se queres que crie o repositório no GitHub.
+
+Os pontos recomendados da lista anterior continuam por fazer: anexos → `needs_review`, nome do cliente e um teste real com descrições em vez de referências.
+
+---
+
+## 👤 Utilizador
+
+nome_do_cliente, podia ser o email, vai ser sempre o mesmo é a melhor forma de deixar as encomendas separadas por cliente de forma deterministica
+
+### 🤖 Claude
+
+Concordo: o remetente é o identificador de cliente mais fiável que temos. É determinístico, vem sempre no email e o código já o normaliza (minúsculas, sem o nome visível); até no caminho do LLM é sobreposto pelo remetente. Há uma limitação a ter presente: se a mesma empresa escrever de dois endereços (`compras@` e `geral@`), aparece como dois clientes. Para já é aceitável, e mais tarde resolve-se com um mapeamento email → cliente.
+
+Então passo a tratar o email como a identidade do cliente: filtro por cliente na API, na página e no CLI, e uma página de clientes. O `customer_name` fica só como informação opcional. Testes primeiro:
+
+> 🔧 Write customer grouping tests (expect RED)
+
+### 🤖 Claude
+
+RED pelos motivos esperados. Implementação:
+
+> 🔧 Implement customer filter/listing in repo, API, web, CLI
+
+### 🤖 Claude
+
+Verde. Uma correção: um email com `+` (ex.: `compras+obra@…`) partiria o link `?customer=`, porque o `+` passa a espaço. Aplico `urlencode` e atualizo a asserção do teste:
+
+> 🔧 URL-encode customer links; add plus-address test
+
+### 🤖 Claude
+
+Tudo verde. Atualizo o README e faço o commit:
+
+> 🔧 Update README and commit customer grouping
+
+### 🤖 Claude
+
+As encomendas passam a estar separadas por cliente através do email do remetente, em todas as vistas. Os 77 testes passam e as alterações estão no commit `252f8ae`.
+
+Quase não houve lógica nova, porque o sistema já guardava o cliente desta forma. O email do remetente já era normalizado (minúsculas, sem o nome visível), e no caminho do LLM o remetente já substitui o que o modelo devolve. Faltava agrupar e filtrar por ele:
+
+- **Página web:**
+  - Há uma página nova, **Clientes** (`/ui/customers`), com cada email e o número de encomendas.
+  - O cliente na lista e no detalhe passou a ser o email, com link para ver só as encomendas desse cliente (`/?customer=…`).
+  - O nome só aparece no detalhe, e apenas quando existe.
+- **API JSON:** `GET /orders?customer_email=…`.
+- **CLI:** `uv run ferrapex orders --customer <email>`. A listagem mostra sempre o email.
+- **Links com `+`:** um email como `compras+obra@…` partia o link do filtro, porque o `+` passava a espaço. Corrigi e há um teste para isso.
+- **BD e README:** a coluna `customer_email` tem agora um índice e o README explica a regra "cliente = email do remetente".
+
+O índice só é criado em bases de dados novas. A tua `data/ferrapex.db` atual continua a funcionar sem ele; se o quiseres, apaga-a e corre `uv run ferrapex` para a recriar.
+
+A limitação mantém-se: se a mesma empresa escrever de dois endereços, aparece como dois clientes. Se isso acontecer, resolve-se com uma pequena tabela de apelidos (email → cliente) sem mudar o resto.
+
+---
+
+## 👤 Utilizador
+
+coloca os anexos em needs_review por enquanto. e depois volta a atualizar o historico de msgs que tivemos e as decisoes tomadas
+
+> 🔧 Check working tree state and README changes
+
+### 🤖 Claude
+
+Estado limpo (só um `.DS_Store`, que junto ao `.gitignore`). Primeiro os anexos, com os testes a vir antes:
+
+> 🔧 Write attachment tests (expect RED)
+
+> 🔧 Implement attachment flagging and LLM block; run tests
+
+### 🤖 Claude
+
+Verde, e sem mexer no service: a issue do parser passa pelo validator e a encomenda cai em `needs_review` pelo fluxo normal. Commit:
+
+> 🔧 Document and commit attachment handling
+
+### 🤖 Claude
+
+Agora o histórico. Exporto a conversa atual e vejo se inclui tudo desde o início:
 
 > 🔧 ToolSearch

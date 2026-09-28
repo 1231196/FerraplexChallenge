@@ -120,5 +120,6 @@ app/
 ├── services/               OrderImportService (pipeline de sincronização)
 └── persistence/            SQLAlchemy: modelos e repositórios
 tests/fixtures/             emails e catálogo de exemplo reais da API
+docs/decisoes.md            registo das decisões tomadas
 docs/ai-conversations/      conversas com a AI usadas para construir o projeto
 ```
