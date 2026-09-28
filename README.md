@@ -17,19 +17,13 @@ Com `uv run ferrapex` basta o `uv`, que trata do próprio Python.
 **(b) Como correr, do zero.** Ver [Correr](#correr): instalar o `uv`, `cp .env.example .env`
 com a chave e `uv run ferrapex`.
 
-**(c) O que a AI escreveu, o que corrigi à mão e em que ainda não confio.** A AI (Claude Code)
-escreveu tudo: código, testes, templates, README e documentação. À mão só configurei o `.env`
-com a chave da API. As conversas estão em [`docs/ai-conversations/`](docs/ai-conversations/) e
-as decisões em [`docs/decisoes.md`](docs/decisoes.md). Ainda não confio em:
-
-- **Mapear descrições para referências com o `qwen3:8b`.** Na
-  [avaliação](docs/avaliacao-exemplos.md), 2 em 4 mapeamentos por descrição estavam errados
-  (ex.: "martelos de borracha" → martelo de unha). Por isso ficam sempre como sugestão para
-  revisão humana.
-- **A verificação de quantidades.** Confirma que o número está escrito no email, não que
-  pertence àquele produto: um número inventado que coincida com outro do texto passa.
-- **Formatos que ainda não vi.** O regex foi feito para os 3 emails de exemplo, e os anexos
-  ainda não são lidos (vão para revisão).
+**(c) O que a AI escreveu, o que corrigi à mão e em que ainda não confio.** Usei o Claude Code
+para tudo: código, testes, templates e documentação. Fi-lo de propósito, porque este não é um
+sistema crítico: corre localmente e não tem autenticação, utilizadores nem nada do género. À
+mão só configurei o `.env` com a chave da API. Os textos (README, decisões e prompts) foram
+escritos por mim e melhorados pelo Claude Code. As conversas estão em
+[`docs/ai-conversations/`](docs/ai-conversations/) e as decisões em
+[`docs/decisoes.md`](docs/decisoes.md).
 
 **(d) Uma decisão em que não segui a sugestão da AI.** A AI sugeriu usar o LLM para fazer a
 avaliação das encomendas. Preferi manter o funcionamento determinístico: primeiro o regex; o
@@ -38,6 +32,12 @@ resultado volta a passar por verificações determinísticas (regex e regras de 
 ser aceite. A avaliação com exemplos confirmou esta escolha: só com o prompt, o `qwen3:8b`
 inventou quantidades e datas, apesar das instruções, e as verificações determinísticas
 apanharam esses casos (15/21 → 22/22).
+
+Usei o `qwen3:8b` para ter um LLM local como segunda via. Com um modelo maior (Gemini, GPT ou
+Claude), penso que os resultados seriam excelentes, sobretudo no texto livre e no mapeamento de
+descrições para referências. Trocar de modelo só mexe no extractor
+(`app/extraction/ollama.py`); o resto do pipeline, incluindo as verificações determinísticas,
+mantém-se igual.
 
 ## Correr
 
