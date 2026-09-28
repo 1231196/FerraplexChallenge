@@ -1,0 +1,43 @@
+referencia,descricao,familia,unidade,preco_eur
+PRF-M6-35Z,Parafuso sextavado M6x35 zincado,Fixacao,un,0.042
+PRF-M6-35I,Parafuso sextavado M6x35 inox A2,Fixacao,un,0.118
+PRF-M8-60Z,Parafuso sextavado M8x60 zincado,Fixacao,un,0.089
+PRF-M10-80Z,Parafuso sextavado M10x80 zincado,Fixacao,un,0.164
+PRF-AGL-40,Parafuso aglomerado 4.0x40 cabeca escareada,Fixacao,un,0.031
+PRF-AGL-60,Parafuso aglomerado 4.0x60 cabeca escareada,Fixacao,un,0.045
+PRF-CHP-25,Parafuso chapa 4.2x25 ponta broca,Fixacao,un,0.038
+PRC-M6,Porca sextavada M6 zincada,Fixacao,un,0.019
+ANL-M6,Anilha plana M6 zincada,Fixacao,un,0.012
+BCH-NYL-08,Bucha nylon 8mm com anilha,Fixacao,un,0.026
+BCH-NYL-10,Bucha nylon 10mm com anilha,Fixacao,un,0.034
+BCH-QUI-300,Bucha quimica poliester 300ml,Fixacao,un,9.75
+ANC-MEC-M10,Ancoragem mecanica M10x90,Fixacao,un,1.85
+FCH-EMB-50,Fechadura de embutir 50mm cilindro europeu,Ferragens porta,un,18.60
+FCH-EMB-60,Fechadura de embutir 60mm cilindro europeu,Ferragens porta,un,21.30
+CIL-30-30,Cilindro europeu 30x30 latonado 5 chaves,Ferragens porta,un,12.40
+CIL-30-40,Cilindro europeu 30x40 latonado 5 chaves,Ferragens porta,un,13.90
+DOB-100-INX,Dobradica 100x70 inox com rolamento,Ferragens porta,par,6.80
+DOB-080-ZNC,Dobradica 80x60 zincada,Ferragens porta,par,2.95
+PUX-INX-300,Puxador tubular inox 300mm,Ferragens porta,un,14.20
+MOL-POR-AER,Mola aerea de porta ate 80kg,Ferragens porta,un,46.50
+FER-BRC-18,Berbequim aparafusador 18V com 2 baterias,Ferramenta,un,128.00
+FER-REB-125,Rebarbadora 125mm 900W,Ferramenta,un,74.90
+FER-MRT-500,Martelo de unha 500g cabo de fibra,Ferramenta,un,11.30
+FER-NIV-100,Nivel de bolha aluminio 100cm,Ferramenta,un,16.70
+FER-FIT-8,Fita metrica 8m x 25mm,Ferramenta,un,8.40
+FER-ALI-180,Alicate universal 180mm isolado,Ferramenta,un,13.60
+BRC-SDS-10,Broca SDS-Plus 10x160mm,Ferramenta,un,4.20
+BRC-HSS-06,Broca HSS 6mm para metal,Ferramenta,un,1.15
+DSC-COR-125,Disco de corte inox 125x1.0mm,Abrasivos,un,1.10
+DSC-DES-125,Disco de desbaste 125x6.0mm,Abrasivos,un,1.95
+DSC-DIA-125,Disco diamantado turbo 125mm,Abrasivos,un,12.80
+LIX-120-ROL,Rolo de lixa grao 120 com 5m,Abrasivos,rolo,7.50
+SIL-NEU-280,Silicone neutro transparente 280ml,Quimicos,un,4.60
+SIL-ACE-280,Silicone acetico branco 280ml,Quimicos,un,3.20
+ESP-PU-750,Espuma de poliuretano para pistola 750ml,Quimicos,un,6.90
+COL-MS-290,Cola MS polimero branca 290ml,Quimicos,un,8.10
+CIM-CEM-25,Cimento cola C2TE saco 25kg,Construcao,saco,9.40
+ARG-REB-30,Argamassa de reboco saco 30kg,Construcao,saco,5.60
+EPI-LUV-10,Luvas nitrilo tamanho 10,EPI,par,1.75
+EPI-OCU-CLR,Oculos de protecao incolor,EPI,un,3.90
+EPI-CAP-BRC,Capacete de obra branco,EPI,un,8.20
