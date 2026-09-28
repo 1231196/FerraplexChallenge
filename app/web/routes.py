@@ -19,8 +19,19 @@ router = APIRouter(include_in_schema=False)
 
 
 @router.get("/", response_class=HTMLResponse)
-def home(request: Request, session_factory: sessionmaker[Session] = Depends(get_session_factory)):
-    return _render_home(request, session_factory)
+def home(
+    request: Request,
+    customer: str | None = None,
+    session_factory: sessionmaker[Session] = Depends(get_session_factory),
+):
+    return _render_home(request, session_factory, customer=customer)
+
+
+@router.get("/ui/customers", response_class=HTMLResponse)
+def customers_page(request: Request, session_factory: sessionmaker[Session] = Depends(get_session_factory)):
+    with session_factory() as session:
+        customers = OrderRepository(session).list_customers()
+    return templates.TemplateResponse(request, "customers.html", {"customers": customers})
 
 
 @router.post("/ui/sync", response_class=HTMLResponse)
@@ -55,11 +66,16 @@ def emails_page(request: Request, session_factory: sessionmaker[Session] = Depen
         return templates.TemplateResponse(request, "emails.html", {"emails": EmailRepository(session).get_all()})
 
 
-def _render_home(request, session_factory, sync_result=None, sync_error=None, status_code=200):
+def _render_home(request, session_factory, customer=None, sync_result=None, sync_error=None, status_code=200):
     with session_factory() as session:
         return templates.TemplateResponse(
             request,
             "orders.html",
-            {"orders": OrderRepository(session).get_all(), "sync_result": sync_result, "sync_error": sync_error},
+            {
+                "orders": OrderRepository(session).get_all(customer),
+                "customer": customer,
+                "sync_result": sync_result,
+                "sync_error": sync_error,
+            },
             status_code=status_code,
         )

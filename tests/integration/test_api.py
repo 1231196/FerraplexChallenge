@@ -37,3 +37,11 @@ def test_sync_then_list_orders(session_factory, catalog):
 
 def test_unknown_order_returns_404(session_factory, catalog):
     assert make_client(session_factory, catalog).get("/orders/999").status_code == 404
+
+
+def test_orders_can_be_filtered_by_customer_email(session_factory, catalog):
+    client = make_client(session_factory, catalog)
+    client.post("/sync")
+
+    assert len(client.get("/orders", params={"customer_email": "compras@cliente.pt"}).json()) == 1
+    assert client.get("/orders", params={"customer_email": "outro@x.pt"}).json() == []

@@ -34,12 +34,19 @@ e abre a página web em http://127.0.0.1:8000.
 | `uv run ferrapex` | sincroniza e abre a página web |
 | `uv run ferrapex sync` | só sincroniza (pode repetir-se: cada email gera no máximo uma encomenda) |
 | `uv run ferrapex orders` | lista as encomendas na linha de comandos |
+| `uv run ferrapex orders --customer <email>` | só as encomendas de um cliente |
 | `uv run ferrapex serve` | só arranca a página web |
 | `uv run ferrapex --no-browser` / `--port 8080` | opções |
 
-Na página web: lista de encomendas com botão **Sincronizar emails**, detalhe de cada encomenda
-(linhas, motivos de revisão, email original) e lista de emails com o estado de processamento.
-A API JSON (`POST /sync`, `GET /orders`, `GET /orders/{id}`) está documentada em `/docs`.
+A página web tem:
+
+- a lista de encomendas, com o botão **Sincronizar emails**;
+- o detalhe de cada encomenda: linhas, motivos de revisão e email original;
+- os clientes e as respetivas encomendas;
+- os emails, com o estado de processamento.
+
+A API JSON (`POST /sync`, `GET /orders?customer_email=`, `GET /orders/{id}`) está
+documentada em `/docs`.
 
 ## Como funciona
 
@@ -60,6 +67,9 @@ API Ferrapex → DeterministicOrderParser → OrderValidator ─ válido ──�
 - **Tudo é validado.** O resultado do parser e o do LLM passam sempre pelo `OrderValidator`:
   referências existentes no catálogo, quantidades inteiras positivas, data de entrega e cliente
   presentes. O LLM nunca é usado como validador.
+- **Cliente = email do remetente.** É determinístico e vem sempre no email: o endereço é
+  normalizado (minúsculas, sem o nome visível) e, no caminho do LLM, o remetente sobrepõe-se
+  ao que o modelo devolver. O nome (`customer_name`) é só informativo.
 - **Na dúvida, revisão humana.** Uma encomenda com qualquer problema fica `needs_review`, com
   os motivos guardados e visíveis na página.
 - **Idempotente e isolado.** `source_email_id` é único. Um erro técnico num email marca-o como

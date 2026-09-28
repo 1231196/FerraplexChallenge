@@ -86,3 +86,39 @@ def test_sync_error_is_shown_instead_of_crashing(session_factory, catalog):
 
     assert response.status_code == 502
     assert "API indisponível" in response.text
+
+
+def test_customers_page_lists_customers_with_order_counts(session_factory, catalog):
+    client = make_client(session_factory, catalog)
+    client.post("/ui/sync")
+
+    html = client.get("/ui/customers").text
+
+    assert "compras@cliente.pt" in html
+    assert 'href="/?customer=compras%40cliente.pt"' in html
+    assert 'data-testid="orders-count">2<' in html
+
+
+def test_home_can_filter_orders_by_customer(session_factory, catalog):
+    client = make_client(session_factory, catalog)
+    client.post("/ui/sync")
+
+    assert "e1" in client.get("/", params={"customer": "compras@cliente.pt"}).text
+    assert "Ainda não há encomendas" in client.get("/", params={"customer": "outro@x.pt"}).text
+
+
+def test_customer_filter_works_with_plus_addresses(session_factory, catalog):
+    service = OrderImportService(
+        client=FakeFerrapexClient([make_email(id="e9", sender="compras+obra@cliente.pt")], catalog),
+        session_factory=session_factory,
+        llm_extractor=FakeExtractor(),
+    )
+    app = create_app()
+    app.dependency_overrides[get_session_factory] = lambda: session_factory
+    app.dependency_overrides[get_import_service] = lambda: service
+    client = TestClient(app)
+    client.post("/ui/sync")
+
+    link = 'href="/?customer=compras%2Bobra%40cliente.pt"'
+    assert link in client.get("/ui/customers").text
+    assert "e9" in client.get("/?customer=compras%2Bobra%40cliente.pt").text

@@ -1,4 +1,4 @@
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.domain.email import Email
@@ -71,9 +71,20 @@ class OrderRepository:
         self._session.flush()
         return model
 
-    def get_all(self) -> list[OrderModel]:
+    def get_all(self, customer_email: str | None = None) -> list[OrderModel]:
         stmt = select(OrderModel).options(selectinload(OrderModel.lines)).order_by(OrderModel.id)
+        if customer_email:
+            stmt = stmt.where(OrderModel.customer_email == customer_email.strip().lower())
         return list(self._session.scalars(stmt))
+
+    def list_customers(self) -> list[tuple[str, int]]:
+        """Clientes identificados pelo email do remetente, com o nº de encomendas."""
+        stmt = (
+            select(OrderModel.customer_email, func.count(OrderModel.id))
+            .group_by(OrderModel.customer_email)
+            .order_by(OrderModel.customer_email)
+        )
+        return [(email, count) for email, count in self._session.execute(stmt)]
 
     def get_by_id(self, order_id: int) -> OrderModel | None:
         return self._session.get(OrderModel, order_id, options=[selectinload(OrderModel.lines)])

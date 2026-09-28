@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="toolbar">
-  <h1>Encomendas</h1>
+  <h1>Encomendas{% if customer %} <span class="muted">· {{ customer }}</span>{% endif %}</h1>
   <form method="post" action="/ui/sync" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'A sincronizar…';">
     <button type="submit">Sincronizar emails</button>
   </form>
@@ -21,6 +21,8 @@
   </div>
 {% endif %}
 
+{% if customer %}<p><a href="/">← Todas as encomendas</a></p>{% endif %}
+
 {% if orders %}
   <div class="table-wrap">
     <table>
@@ -35,7 +37,7 @@
         <tr>
           <td><a href="/ui/orders/{{ o.id }}">{{ o.id }}</a></td>
           <td>{{ o.source_email_id }}</td>
-          <td>{{ o.customer_name or o.customer_email }}</td>
+          <td><a href="/?customer={{ o.customer_email | urlencode }}">{{ o.customer_email }}</a></td>
           <td>{{ o.requested_delivery_date or '—' }}</td>
           <td class="num">{{ o.lines | length }}</td>
           <td><span class="badge {{ o.status }}">{{ o.status }}</span></td>
@@ -46,6 +48,8 @@
     </table>
   </div>
 {% else %}
-  <div class="card muted">Ainda não há encomendas. Carrega em “Sincronizar emails” para importar da API Ferrapex.</div>
+  <div class="card muted">
+    {% if customer %}Ainda não há encomendas deste cliente.{% else %}Ainda não há encomendas. Carrega em “Sincronizar emails” para importar da API Ferrapex.{% endif %}
+  </div>
 {% endif %}
 {% endblock %}

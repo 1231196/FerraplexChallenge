@@ -75,3 +75,17 @@ def test_duplicate_source_email_is_rejected(session):
     with pytest.raises(IntegrityError):
         orders.create_order("e1", make_order(), status="processed", extraction_method="llm")
         session.commit()
+
+
+def _order_for(email: str) -> ExtractedOrder:
+    return make_order().model_copy(update={"customer_email": email})
+
+
+def test_orders_can_be_filtered_by_customer_and_customers_listed(session):
+    emails, orders = EmailRepository(session), OrderRepository(session)
+    for email_id, customer in [("e1", "a@x.pt"), ("e2", "b@y.pt"), ("e3", "a@x.pt")]:
+        emails.add(make_email(id=email_id, sender=customer))
+        orders.create_order(email_id, _order_for(customer), status="processed", extraction_method="deterministic")
+
+    assert [o.source_email_id for o in orders.get_all(customer_email="a@x.pt")] == ["e1", "e3"]
+    assert orders.list_customers() == [("a@x.pt", 2), ("b@y.pt", 1)]

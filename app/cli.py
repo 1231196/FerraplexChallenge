@@ -2,7 +2,7 @@
 
     ferrapex           sincroniza e abre a página web (http://127.0.0.1:8000)
     ferrapex sync      só sincroniza
-    ferrapex orders    lista as encomendas guardadas
+    ferrapex orders    lista as encomendas guardadas (--customer <email> para filtrar)
     ferrapex serve     só arranca a página web
 """
 
@@ -31,12 +31,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("command", nargs="?", default="start", choices=["start", "sync", "orders", "serve"])
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--no-browser", action="store_true", help="não abrir o browser automaticamente")
+    parser.add_argument("--customer", help="com `orders`: só as encomendas deste cliente (email)")
     args = parser.parse_args(argv)
 
     try:
         _check_config()
         if args.command == "orders":
-            _print_orders()
+            _print_orders(args.customer)
             return 0
         if args.command in ("start", "sync"):
             ok = _sync()
@@ -92,9 +93,9 @@ async def _run_sync():
         return await service.sync()
 
 
-def _print_orders() -> None:
+def _print_orders(customer: str | None = None) -> None:
     with get_session_factory()() as session:
-        orders = OrderRepository(session).get_all()
+        orders = OrderRepository(session).get_all(customer)
         if not orders:
             print("Ainda não há encomendas. Corre `uv run ferrapex sync`.")
             return
@@ -102,7 +103,7 @@ def _print_orders() -> None:
             lines = ", ".join(f"{l.product_reference} x {l.quantity}" for l in o.lines)
             print(
                 f"#{o.id:<3} {o.source_email_id:<8} {o.status:<13} {o.requested_delivery_date or '—'!s:<11} "
-                f"{o.customer_name or o.customer_email}\n      {lines or '(sem linhas)'}"
+                f"{o.customer_email}\n      {lines or '(sem linhas)'}"
             )
 
 

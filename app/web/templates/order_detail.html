@@ -6,8 +6,8 @@
 
 <div class="card">
   <dl>
-    <dt>Cliente</dt><dd>{{ order.customer_name or '—' }}</dd>
-    <dt>Email do cliente</dt><dd>{{ order.customer_email }}</dd>
+    <dt>Cliente</dt><dd><a href="/?customer={{ order.customer_email | urlencode }}">{{ order.customer_email }}</a></dd>
+    {% if order.customer_name %}<dt>Nome</dt><dd>{{ order.customer_name }}</dd>{% endif %}
     <dt>Data de entrega</dt><dd>{{ order.requested_delivery_date or '—' }}</dd>
     <dt>Método de extração</dt><dd>{{ order.extraction_method }}</dd>
     <dt>Email de origem</dt><dd>{{ order.source_email_id }}</dd>

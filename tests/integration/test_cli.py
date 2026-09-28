@@ -91,3 +91,14 @@ def test_missing_configuration_gives_clear_message(wired, monkeypatch, capsys):
     err = capsys.readouterr().err
     assert ".env" in err and "FERRAPEX_API_KEY" in err
     assert wired["served"] == []
+
+
+def test_orders_command_filters_by_customer(wired, capsys):
+    cli.main(["sync"])
+    capsys.readouterr()
+
+    cli.main(["orders", "--customer", "outro@x.pt"])
+    assert "Ainda não há encomendas" in capsys.readouterr().out
+
+    cli.main(["orders", "--customer", "compras@cliente.pt"])
+    assert "e1" in capsys.readouterr().out

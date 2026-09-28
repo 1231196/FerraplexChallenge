@@ -53,9 +53,12 @@ def create_app() -> FastAPI:
         return SyncOut(**asdict(await service.sync()))
 
     @app.get("/orders", response_model=list[OrderOut])
-    def list_orders(session_factory: sessionmaker[Session] = Depends(get_session_factory)) -> list[OrderOut]:
+    def list_orders(
+        customer_email: str | None = None,
+        session_factory: sessionmaker[Session] = Depends(get_session_factory),
+    ) -> list[OrderOut]:
         with session_factory() as session:
-            return [OrderOut.model_validate(o) for o in OrderRepository(session).get_all()]
+            return [OrderOut.model_validate(o) for o in OrderRepository(session).get_all(customer_email)]
 
     @app.get("/orders/{order_id}", response_model=OrderOut)
     def get_order(order_id: int, session_factory: sessionmaker[Session] = Depends(get_session_factory)) -> OrderOut:

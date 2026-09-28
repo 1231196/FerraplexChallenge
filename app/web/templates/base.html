@@ -63,6 +63,7 @@
       <strong>Ferrapex</strong>
       <nav>
         <a href="/" class="{{ 'active' if request.url.path in ['/', '/ui/sync'] else '' }}">Encomendas</a>
+        <a href="/ui/customers" class="{{ 'active' if request.url.path == '/ui/customers' else '' }}">Clientes</a>
         <a href="/ui/emails" class="{{ 'active' if request.url.path == '/ui/emails' else '' }}">Emails</a>
         <a href="/docs">API</a>
       </nav>

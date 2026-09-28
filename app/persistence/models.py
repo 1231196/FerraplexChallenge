@@ -31,7 +31,7 @@ class OrderModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     source_email_id: Mapped[str] = mapped_column(ForeignKey("emails.id"), unique=True)
-    customer_email: Mapped[str] = mapped_column(String(320))
+    customer_email: Mapped[str] = mapped_column(String(320), index=True)  # identifica o cliente
     customer_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     requested_delivery_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     status: Mapped[str] = mapped_column(String(20))  # processed | needs_review
