@@ -32,3 +32,10 @@ def test_parse_failures_use_llm(issue_type):
 def test_business_rule_violations_on_well_parsed_email_do_not_use_llm(issue_type):
     """O conteúdo foi lido corretamente; o LLM não pode 'corrigir' referências ou quantidades."""
     assert should_use_llm(ORDER, [issue(issue_type)]) is False
+
+
+def test_emails_with_attachments_never_use_llm():
+    """O LLM não vê os anexos; chamá-lo só daria uma encomenda possivelmente incompleta."""
+    issues = [issue("no_lines_found"), issue("attachments_not_supported")]
+
+    assert should_use_llm(ORDER, issues) is False

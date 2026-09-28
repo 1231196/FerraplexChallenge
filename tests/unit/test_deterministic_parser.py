@@ -73,3 +73,15 @@ def test_parser_does_not_filter_unknown_references(catalog):
     order = parser.parse(make_email(body=body), catalog)
 
     assert order.lines == [OrderLine(reference="XXX-000-99", quantity=5)]
+
+
+def test_parser_flags_emails_with_attachments(catalog):
+    """Anexos ainda não são lidos: a encomenda pode estar (também) no anexo."""
+    email = make_email(attachments=[{"name": "encomenda.pdf"}, "fotos.zip"])
+
+    order = parser.parse(email, catalog)
+
+    assert "attachments_not_supported" in issue_types(order)
+    message = next(i.message for i in order.issues if i.type == "attachments_not_supported")
+    assert "encomenda.pdf" in message and "fotos.zip" in message
+    assert len(order.lines) == 3  # o corpo continua a ser lido para pré-preencher a revisão

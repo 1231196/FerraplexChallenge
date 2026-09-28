@@ -15,5 +15,11 @@ PARSE_FAILURE_ISSUES = frozenset(
 )
 
 
+# O LLM só vê o corpo do email. Com anexos, o resultado podia estar incompleto: vai para revisão.
+BLOCKS_LLM_ISSUES = frozenset({"attachments_not_supported"})
+
+
 def should_use_llm(order: ExtractedOrder, issues: list[ExtractionIssue]) -> bool:
+    if any(issue.type in BLOCKS_LLM_ISSUES for issue in issues):
+        return False
     return any(issue.type in PARSE_FAILURE_ISSUES for issue in issues)

@@ -148,3 +148,20 @@ async def test_llm_response_outside_schema_is_marked_needs_review(session_factor
     assert result.needs_review == 1
     assert order.status == "needs_review"
     assert "llm_invalid_response" in email.processing_error
+
+
+async def test_email_with_attachments_is_marked_needs_review_without_llm(session_factory, catalog):
+    extractor = FakeExtractor()
+    emails = [
+        make_email(id="e1", attachments=[{"name": "encomenda.xlsx"}]),  # corpo válido + anexo
+        make_email(id="e2", body="Segue encomenda em anexo.", attachments=[{"name": "encomenda.pdf"}]),
+    ]
+
+    result = await build(session_factory, catalog, emails, extractor).sync()
+
+    assert extractor.calls == []
+    assert result.needs_review == 2
+    for email_id in ("e1", "e2"):
+        email, order = stored(session_factory, email_id)
+        assert order.status == "needs_review"
+        assert "attachments_not_supported" in email.processing_error

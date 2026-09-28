@@ -20,6 +20,7 @@ def make_email(
     id: str = "email-1",
     body: str = "Para entrega a 2026-09-21:\n\nPRF-AGL-40 | 1200\nBCH-NYL-08 | 800\nSIL-ACE-280 | 24\n",
     sender: str = "compras@cliente.pt",
+    attachments: list | None = None,
 ) -> Email:
     return Email.model_validate(
         {
@@ -29,7 +30,7 @@ def make_email(
             "received_at": datetime(2026, 9, 1, 10, 0, tzinfo=timezone.utc),
             "subject": "Encomenda",
             "body": body,
-            "attachments": [],
+            "attachments": attachments or [],
         }
     )
 

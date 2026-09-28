@@ -15,6 +15,12 @@ def parse_sender(sender: str) -> tuple[str | None, str]:
     return (name.strip() or None), (address or sender).strip().lower()
 
 
+def _attachment_name(attachment: object) -> str:
+    if isinstance(attachment, dict):
+        return str(attachment.get("name") or attachment.get("filename") or attachment)
+    return str(attachment)
+
+
 class DeterministicOrderParser:
     """Parser para o formato atual: data YYYY-MM-DD + linhas `REFERENCIA | QUANTIDADE`.
 
@@ -28,6 +34,12 @@ class DeterministicOrderParser:
 
         delivery_date = self._parse_date(email.body, issues)
         lines = self._parse_lines(email.body, issues)
+        if email.attachments:
+            # Anexos ainda não são lidos: a encomenda pode estar (também) no anexo.
+            names = ", ".join(_attachment_name(a) for a in email.attachments)
+            issues.append(
+                ExtractionIssue(type="attachments_not_supported", message=f"Email com anexos por processar: {names}.")
+            )
 
         return ExtractedOrder(
             customer_name=customer_name,

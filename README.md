@@ -70,6 +70,9 @@ API Ferrapex → DeterministicOrderParser → OrderValidator ─ válido ──�
 - **Cliente = email do remetente.** É determinístico e vem sempre no email: o endereço é
   normalizado (minúsculas, sem o nome visível) e, no caminho do LLM, o remetente sobrepõe-se
   ao que o modelo devolver. O nome (`customer_name`) é só informativo.
+- **Anexos vão para revisão.** Por enquanto os anexos não são lidos. Um email com anexos fica
+  `needs_review`: o corpo é lido na mesma para pré-preencher a encomenda, mas o LLM não é
+  chamado, porque não vê o anexo e o resultado podia ficar incompleto.
 - **Na dúvida, revisão humana.** Uma encomenda com qualquer problema fica `needs_review`, com
   os motivos guardados e visíveis na página.
 - **Idempotente e isolado.** `source_email_id` é único. Um erro técnico num email marca-o como
