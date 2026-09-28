@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Emails · Ferrapex{% endblock %}
+{% block content %}
+<h1>Emails</h1>
+{% if emails %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Remetente</th><th>Assunto</th><th>Recebido</th><th>Estado</th><th>Detalhe</th></tr>
+      </thead>
+      <tbody>
+        {% for e in emails %}
+        <tr>
+          <td>{{ e.id }}</td>
+          <td>{{ e.sender }}</td>
+          <td>{{ e.subject }}</td>
+          <td>{{ e.received_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td><span class="badge {{ e.processing_status }}">{{ e.processing_status }}</span></td>
+          <td class="wrap-text muted">{{ e.processing_error or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card muted">Ainda não foram importados emails.</div>
+{% endif %}
+{% endblock %}

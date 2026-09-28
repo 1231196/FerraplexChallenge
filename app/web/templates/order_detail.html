@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Encomenda {{ order.id }} · Ferrapex{% endblock %}
+{% block content %}
+<p><a href="/">← Encomendas</a></p>
+<h1>Encomenda {{ order.id }} <span class="badge {{ order.status }}">{{ order.status }}</span></h1>
+
+<div class="card">
+  <dl>
+    <dt>Cliente</dt><dd>{{ order.customer_name or '—' }}</dd>
+    <dt>Email do cliente</dt><dd>{{ order.customer_email }}</dd>
+    <dt>Data de entrega</dt><dd>{{ order.requested_delivery_date or '—' }}</dd>
+    <dt>Método de extração</dt><dd>{{ order.extraction_method }}</dd>
+    <dt>Email de origem</dt><dd>{{ order.source_email_id }}</dd>
+    <dt>Criada em</dt><dd>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+  </dl>
+</div>
+
+{% if email and email.processing_error %}
+  <h2>Motivos para revisão</h2>
+  <div class="card">
+    <ul class="issues">
+      {% for issue in email.processing_error.split('; ') %}<li>{{ issue }}</li>{% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<h2>Linhas</h2>
+{% if order.lines %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Referência</th><th class="num">Quantidade</th></tr></thead>
+      <tbody>
+        {% for line in order.lines %}
+        <tr><td>{{ line.product_reference }}</td><td class="num">{{ line.quantity }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card muted">Sem linhas extraídas.</div>
+{% endif %}
+
+{% if email %}
+  <h2>Email original</h2>
+  <div class="card">
+    <dl style="margin-bottom:12px">
+      <dt>De</dt><dd>{{ email.sender }}</dd>
+      <dt>Assunto</dt><dd>{{ email.subject }}</dd>
+      <dt>Recebido</dt><dd>{{ email.received_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+    </dl>
+    <pre>{{ email.body }}</pre>
+  </div>
+{% endif %}
+{% endblock %}

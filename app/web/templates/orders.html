@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toolbar">
+  <h1>Encomendas</h1>
+  <form method="post" action="/ui/sync" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'A sincronizar…';">
+    <button type="submit">Sincronizar emails</button>
+  </form>
+</div>
+
+{% if sync_error %}
+  <div class="alert err"><strong>O sync falhou.</strong> {{ sync_error }}</div>
+{% endif %}
+
+{% if sync_result %}
+  <div class="card stats" style="margin-bottom:16px">
+    <div>Recebidos<span data-testid="sync-fetched">{{ sync_result.fetched }}</span></div>
+    <div>Processados<span data-testid="sync-processed">{{ sync_result.processed }}</span></div>
+    <div>Para revisão<span data-testid="sync-needs-review">{{ sync_result.needs_review }}</span></div>
+    <div>Falhados<span data-testid="sync-failed">{{ sync_result.failed }}</span></div>
+    <div>Ignorados<span data-testid="sync-skipped">{{ sync_result.skipped }}</span></div>
+  </div>
+{% endif %}
+
+{% if orders %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Email</th><th>Cliente</th><th>Entrega</th>
+          <th class="num">Linhas</th><th>Estado</th><th>Método</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><a href="/ui/orders/{{ o.id }}">{{ o.id }}</a></td>
+          <td>{{ o.source_email_id }}</td>
+          <td>{{ o.customer_name or o.customer_email }}</td>
+          <td>{{ o.requested_delivery_date or '—' }}</td>
+          <td class="num">{{ o.lines | length }}</td>
+          <td><span class="badge {{ o.status }}">{{ o.status }}</span></td>
+          <td class="muted">{{ o.extraction_method }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="card muted">Ainda não há encomendas. Carrega em “Sincronizar emails” para importar da API Ferrapex.</div>
+{% endif %}
+{% endblock %}
