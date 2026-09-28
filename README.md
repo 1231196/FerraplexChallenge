@@ -4,6 +4,41 @@ Vai buscar os emails da caixa de encomendas da Ferrapex à API, extrai cada enco
 (cliente, linhas com referência e quantidade, data pretendida), guarda-a em SQLite e
 mostra-a numa página web e na linha de comandos.
 
+## Resumo para a avaliação
+
+**(a) Tecnologia e porquê.** Escolhi as tecnologias com um critério principal: ser simples e
+funcional. Python 3.12 com FastAPI, Pydantic, SQLAlchemy 2.x e SQLite; páginas em Jinja2 sem
+frameworks de frontend; `uv` para instalar tudo com um comando; Ollama com `qwen3:8b`, local e
+opcional, só para o texto livre. A alternativa que pus de lado foi o **Docker**
+(`docker compose up` com a app e o Ollama). Perdeu por ser mais pesado para quem avalia: exige
+o Docker instalado e descarregar o modelo (~5 GB), quando os emails atuais nem precisam do LLM.
+Com `uv run ferrapex` basta o `uv`, que trata do próprio Python.
+
+**(b) Como correr, do zero.** Ver [Correr](#correr): instalar o `uv`, `cp .env.example .env`
+com a chave e `uv run ferrapex`.
+
+**(c) O que a AI escreveu, o que corrigi à mão e em que ainda não confio.** A AI (Claude Code)
+escreveu tudo: código, testes, templates, README e documentação. À mão só configurei o `.env`
+com a chave da API. As conversas estão em [`docs/ai-conversations/`](docs/ai-conversations/) e
+as decisões em [`docs/decisoes.md`](docs/decisoes.md). Ainda não confio em:
+
+- **Mapear descrições para referências com o `qwen3:8b`.** Na
+  [avaliação](docs/avaliacao-exemplos.md), 2 em 4 mapeamentos por descrição estavam errados
+  (ex.: "martelos de borracha" → martelo de unha). Por isso ficam sempre como sugestão para
+  revisão humana.
+- **A verificação de quantidades.** Confirma que o número está escrito no email, não que
+  pertence àquele produto: um número inventado que coincida com outro do texto passa.
+- **Formatos que ainda não vi.** O regex foi feito para os 3 emails de exemplo, e os anexos
+  ainda não são lidos (vão para revisão).
+
+**(d) Uma decisão em que não segui a sugestão da AI.** A AI sugeriu usar o LLM para fazer a
+avaliação das encomendas. Preferi manter o funcionamento determinístico: primeiro o regex; o
+LLM só como segunda via, quando o regex não consegue ler o email; e, quando o LLM é usado, o
+resultado volta a passar por verificações determinísticas (regex e regras de negócio) antes de
+ser aceite. A avaliação com exemplos confirmou esta escolha: só com o prompt, o `qwen3:8b`
+inventou quantidades e datas, apesar das instruções, e as verificações determinísticas
+apanharam esses casos (15/21 → 22/22).
+
 ## Correr
 
 Pré-requisito: [uv](https://docs.astral.sh/uv/). Trata do Python 3.12 e das dependências.
@@ -51,11 +86,14 @@ documentada em `/docs`.
 ## Como funciona
 
 ```text
-API Ferrapex → DeterministicOrderParser → OrderValidator ─ válido ─────────────→ processed
-                        │ não consegue interpretar o formato
+API Ferrapex → DeterministicOrderParser (regex) → OrderValidator ─ válido ──→ processed
+                        │ não consegue interpretar o formato        └ issues → needs_review
                         ▼
-               OllamaOrderExtractor (qwen3:8b) → OrderValidator ─ válido → processed
-                                                                └ issues → needs_review
+               OllamaOrderExtractor (qwen3:8b)
+                        ▼
+               OrderValidator + verificação de evidência no texto (regex)
+                        ├ válido ─→ processed
+                        └ issues → needs_review
 ```
 
 - **Parser determinístico primeiro.** Os emails atuais têm um formato regular
@@ -131,10 +169,12 @@ app/
 ├── api/ferrapex_client.py  cliente HTTP da API Ferrapex
 ├── domain/                 modelos Pydantic (Email, Product, ExtractedOrder)
 ├── extraction/             parser determinístico, extractor Ollama, política de fallback
-├── validation/             OrderValidator
+├── validation/             OrderValidator e verificação de evidência (grounding)
 ├── services/               OrderImportService (pipeline de sincronização)
 └── persistence/            SQLAlchemy: modelos e repositórios
 tests/fixtures/             emails e catálogo de exemplo reais da API
+scripts/                    avaliação com exemplos contra o LLM real
+docs/avaliacao-exemplos.md  resultado da avaliação
 docs/decisoes.md            registo das decisões tomadas
 docs/ai-conversations/      conversas com a AI usadas para construir o projeto
 ```
