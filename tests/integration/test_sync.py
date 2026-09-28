@@ -39,7 +39,8 @@ async def test_failure_in_one_email_does_not_stop_next_email(session_factory, ca
 
 
 async def test_failed_email_is_retried_on_next_sync(session_factory, catalog):
-    email = make_email(id="e1", body="texto que o parser não entende")
+    body = "Queria 1200 PRF-AGL-40 e 24 SIL-ACE-280 para 21 de setembro de 2026."
+    email = make_email(id="e1", body=body)
     extractor = FakeExtractor({"e1": httpx.ReadTimeout("timeout")})
     service = OrderImportService(
         client=FakeFerrapexClient([email], catalog), session_factory=session_factory, llm_extractor=extractor

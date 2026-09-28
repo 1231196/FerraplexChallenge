@@ -64,6 +64,11 @@ API Ferrapex → DeterministicOrderParser → OrderValidator ─ válido ──�
   de referências. Só é chamado quando o parser não consegue interpretar o email. Nunca é
   chamado por erros técnicos (HTTP, base de dados, configuração) nem para "corrigir" referências
   ou quantidades de um email bem lido. Usa structured output com JSON Schema.
+- **O LLM tem de mostrar evidência.** Nos testes, o `qwen3:8b` inventou quantidades e datas e
+  mapeou produtos inexistentes, apesar do prompt. O resultado do LLM passa por verificações
+  determinísticas: a quantidade e a data têm de estar escritas no email, e nenhuma referência
+  escrita pode faltar. Uma referência inferida de uma descrição fica como sugestão para
+  revisão humana.
 - **Tudo é validado.** O resultado do parser e o do LLM passam sempre pelo `OrderValidator`:
   referências existentes no catálogo, quantidades inteiras positivas, data de entrega e cliente
   presentes. O LLM nunca é usado como validador.
@@ -105,6 +110,16 @@ Os restantes emails não são afetados.
 uv run pytest             # unitários + integração (API e Ollama simulados, SQLite em memória)
 uv run pytest -m ollama   # contra um Ollama real com qwen3:8b
 ```
+
+### Avaliação com exemplos
+
+```bash
+uv run python scripts/evaluate_examples.py
+```
+
+Corre 22 emails de exemplo pelo pipeline real, com o `qwen3:8b`: formato atual, gralhas,
+anexos, texto livre, descrições, inglês, ambiguidades e omissões. O relatório fica em
+[`docs/avaliacao-exemplos.md`](docs/avaliacao-exemplos.md).
 
 ## Estrutura
 

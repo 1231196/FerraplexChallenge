@@ -68,8 +68,23 @@ Registo das decisões do projeto, pela ordem em que surgiram na conversa com a A
 | 33 | Testes sem API nem Ollama reais (fakes, SQLite em memória); testes reais separados com `@pytest.mark.ollama` | Utilizador | Testes rápidos e determinísticos. |
 | 34 | Conversas com a AI guardadas em `docs/ai-conversations/`, verificadas para não conterem a chave | Enunciado | "Usa AI para escrever o código e guarda as conversas." |
 
+## Avaliação com exemplos reais do LLM
+
+Ver [`avaliacao-exemplos.md`](avaliacao-exemplos.md): 22 emails de exemplo passaram pelo pipeline
+real com o `qwen3:8b`. A primeira execução deu 15/21, e as falhas eram dados inventados marcados
+como `processed`.
+
+| # | Decisão | Origem | Porquê |
+|---|---|---|---|
+| 35 | O resultado do LLM passa por **verificações de evidência** (`grounding.py`), além do validator | AI (a partir da avaliação) | O prompt não chegou: o modelo inventou a quantidade ("umas caixas" → 1) e a data ("próxima sexta"), e mapeou produtos inexistentes ou ambíguos. O validator só confirma que a referência existe, não que veio do email. |
+| 36 | Uma quantidade ou uma data que não estejam escritas no email → `needs_review` | AI | Aplicação determinística da regra "não inventar". |
+| 37 | Referência inferida de uma descrição (não escrita no email) → `needs_review` com a sugestão pré-preenchida | AI | 2 em 4 mapeamentos por descrição estavam errados. Custo aceite: descrições corretas também pedem confirmação; a revisão fica rápida porque a sugestão já vem preenchida. Revisitar com um modelo maior ou com um historial de confirmações. |
+| 38 | Referência do catálogo escrita no email mas ausente das linhas → `needs_review` | AI | O LLM pode omitir linhas em silêncio. |
+| 39 | O parser sinaliza referências mencionadas fora das linhas `REF \| QTD` → `needs_review` (sem LLM) | AI | Uma correção em texto livre ("afinal são 500") era ignorada e gravava a quantidade errada. |
+| 40 | Instruções ao "sistema" no texto do cliente não são tratadas como ataque | AI | O remetente é o próprio cliente: o que ele pede é a encomenda. As regras determinísticas aplicam-se na mesma e o LLM não consegue contorná-las. |
+
 ## Em aberto (próximos passos)
 
 - Ler anexos (`GET /emails/{id}/attachments/{nome}`): CSV/Excel de forma determinística; PDF com extração de texto antes do fallback.
 - Tabela de apelidos email → cliente para empresas com vários endereços.
-- Teste real com emails em texto livre com descrições em vez de referências.
+- Reduzir as revisões por descrição (tabela de sinónimos confirmados pelos humanos, ou modelo maior), medindo sempre com `scripts/evaluate_examples.py`.

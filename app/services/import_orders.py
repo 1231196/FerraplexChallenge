@@ -12,6 +12,7 @@ from app.extraction.deterministic_parser import DeterministicOrderParser
 from app.extraction.fallback import should_use_llm
 from app.extraction.ollama import LLMExtractionError
 from app.persistence.repositories import EmailRepository, OrderRepository
+from app.validation.grounding import check_grounding
 from app.validation.order_validator import OrderValidator
 
 logger = logging.getLogger(__name__)
@@ -119,7 +120,10 @@ class OrderImportService:
                 "customer_name": llm_order.customer_name or parsed.customer_name,
             }
         )
-        return _Extraction(llm_order, "llm", self._validator.validate(llm_order, catalog))
+        issues = self._validator.validate(llm_order, catalog) + check_grounding(
+            llm_order, email.body, {p.reference for p in catalog}
+        )
+        return _Extraction(llm_order, "llm", issues)
 
 
 def _summarize(issues: list[ExtractionIssue]) -> str:

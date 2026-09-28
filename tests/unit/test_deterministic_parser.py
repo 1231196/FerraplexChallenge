@@ -85,3 +85,18 @@ def test_parser_flags_emails_with_attachments(catalog):
     message = next(i.message for i in order.issues if i.type == "attachments_not_supported")
     assert "encomenda.pdf" in message and "fotos.zip" in message
     assert len(order.lines) == 3  # o corpo continua a ser lido para pré-preencher a revisão
+
+
+def test_parser_flags_references_mentioned_outside_order_lines(catalog):
+    """Ex.: uma correção em texto livre que o regex não leria."""
+    body = "Para entrega a 2026-09-21:\nPRF-AGL-40 | 1200\nBCH-NYL-08 | 800\n\nPS: afinal das BCH-NYL-08 são só 500."
+    order = parser.parse(make_email(body=body), catalog)
+
+    assert "reference_outside_order_lines" in issue_types(order)
+
+
+def test_parser_does_not_flag_ordinary_hyphenated_words(catalog):
+    body = "Para entrega a 2026-09-21:\nPRF-AGL-40 | 1200\n\nCom os melhores cumprimentos,\nConstruções Vale-do-Ave, Lda"
+    order = parser.parse(make_email(body=body), catalog)
+
+    assert order.issues == []

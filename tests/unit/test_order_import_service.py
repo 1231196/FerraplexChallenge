@@ -165,3 +165,15 @@ async def test_email_with_attachments_is_marked_needs_review_without_llm(session
         email, order = stored(session_factory, email_id)
         assert order.status == "needs_review"
         assert "attachments_not_supported" in email.processing_error
+
+
+async def test_llm_result_without_evidence_in_email_goes_to_review(session_factory, catalog):
+    """O LLM inventou a quantidade: o validator aceita (referência existe, qtd > 0), o grounding não."""
+    body = "Mandem umas caixas de PRF-AGL-40 para dia 21 de setembro de 2026."
+    extractor = FakeExtractor({"e1": llm_order(lines=[OrderLine(reference="PRF-AGL-40", quantity=1)])})
+
+    await build(session_factory, catalog, [make_email(id="e1", body=body)], extractor).sync()
+
+    email, order = stored(session_factory, "e1")
+    assert order.status == "needs_review"
+    assert "quantity_not_in_email" in email.processing_error
